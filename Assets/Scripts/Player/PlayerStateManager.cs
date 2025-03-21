@@ -8,6 +8,10 @@ public class PlayerStateManager : MonoBehaviour
 {
     public CharacterController PlayerController;
 
+    public GameObject FireBallPoint;
+
+    public GameObject ProjectilePrefab;
+
     public AudioSource AudioSource;
 
     public GameObject InventoryWindow;
@@ -73,6 +77,22 @@ public class PlayerStateManager : MonoBehaviour
         movementInput = new Vector3(InputVector.x, 0, InputVector.y).normalized;
         PlayerAnimator.SetFloat("moveX", movementInput.x);
         PlayerAnimator.SetFloat("moveY", movementInput.z);
+
+    }
+
+    private void OnAttack()
+    {
+        PlayerAnimator.SetTrigger("pAttacking");
+        StartCoroutine(WaitForAnimation());
+
+        
+    }
+
+    IEnumerator WaitForAnimation()
+    {
+        yield return new WaitForSeconds(0.3f);
+        GameObject fireball = Instantiate(ProjectilePrefab, FireBallPoint.transform.position, transform.rotation);
+        fireball.GetComponent<Rigidbody>().AddRelativeForce(new Vector3(0, 0, 60));
 
     }
 
