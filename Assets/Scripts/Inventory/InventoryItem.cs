@@ -17,8 +17,6 @@ public class InventoryItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
 
     public void GetItemInfos(ScriptableItem newItem)
     {
-        Debug.Log(newItem.name);
-        
         item = newItem;
         itemImage.sprite = item.itemImage;
         itemName = newItem.itemName;

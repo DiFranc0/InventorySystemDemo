@@ -8,6 +8,8 @@ public class PlayerStateManager : MonoBehaviour
 {
     public CharacterController PlayerController;
 
+    public AudioSource AudioSource;
+
     public GameObject InventoryWindow;
 
     public GameObject CameraObject;
@@ -30,7 +32,9 @@ public class PlayerStateManager : MonoBehaviour
 
     private float targetRotationY;
 
-    Vector3 movementInput;
+    private Vector3 movementInput;
+
+    
 
     private void Awake()
     {
@@ -41,7 +45,7 @@ public class PlayerStateManager : MonoBehaviour
         PlayerInput = GetComponent<PlayerInput>();
         PlayerAnimator = GetComponent<Animator>();
 
-        PlayerWalkSpeed = 10f;
+        PlayerWalkSpeed = 6f;
         PlayerRotationSpeed = 10;
 
         gravityVector = new Vector3(0, -9.81f, 0);
@@ -67,6 +71,8 @@ public class PlayerStateManager : MonoBehaviour
         InputVector = value.Get<Vector2>();
 
         movementInput = new Vector3(InputVector.x, 0, InputVector.y).normalized;
+        PlayerAnimator.SetFloat("moveX", movementInput.x);
+        PlayerAnimator.SetFloat("moveY", movementInput.z);
 
     }
 
@@ -74,6 +80,7 @@ public class PlayerStateManager : MonoBehaviour
     {
         RotateVector = value.Get<Vector2>();
         targetRotationY += RotateVector.x;
+        
     }
 
     public void MovePlayer()
@@ -126,6 +133,7 @@ public class PlayerStateManager : MonoBehaviour
     {
         if (!InventoryWindow.activeSelf)
         {
+            AudioSource.Play();
             InventoryWindow.SetActive(true);
             Time.timeScale = 0;
             Cursor.lockState = CursorLockMode.Confined;
@@ -133,6 +141,7 @@ public class PlayerStateManager : MonoBehaviour
         }
         else
         {
+            AudioSource.Play();
             InventoryWindow.SetActive(false);
             Time.timeScale = 1;
             Cursor.lockState = CursorLockMode.Locked;
