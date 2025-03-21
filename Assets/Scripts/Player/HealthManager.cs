@@ -1,16 +1,17 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class HealthManager : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    public Slider healthSlider;
+
+    public void DamageHealth(float damage)
     {
-        
+        healthSlider.value -= damage;
     }
 
-    // Update is called once per frame
-    void Update()
+    public void GainHealth(float health)
     {
-        
+        healthSlider.value += health;
     }
 }

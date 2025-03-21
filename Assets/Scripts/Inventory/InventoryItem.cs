@@ -26,7 +26,7 @@ public class InventoryItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
 
     public void UpdateItemQuantity()
     {
-        quantityTxt.text = quantityTxt.ToString();
+        quantityTxt.text = quantity.ToString();
         bool textActive = quantity > 1;
         quantityTxt.gameObject.SetActive(textActive);
     }

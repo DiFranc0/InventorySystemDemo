@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -10,6 +11,8 @@ public class InventoryManager : MonoBehaviour
 
     public ScriptableItem[] ItemsToAdd;
 
+    public HealthManager healthManager;
+
     public GameObject inventoryItemPrefab;
 
     public Image selectedItemImg;
@@ -19,6 +22,8 @@ public class InventoryManager : MonoBehaviour
     public TMP_Text selectedItemQuantityTxt;
 
     public TMP_Text selectedItemDescriptionTxt;
+
+    public GameObject saveFeedback;
 
     private InventoryItem selectedItem;
 
@@ -47,6 +52,7 @@ public class InventoryManager : MonoBehaviour
             {
                 itemInSlot.quantity++;
                 itemInSlot.UpdateItemQuantity();
+                return;
             }
             
         }
@@ -91,10 +97,12 @@ public class InventoryManager : MonoBehaviour
     {
         switch(selectedItem.itemName){
             case "Health Potion":
+                healthManager.GainHealth(0.5f);
                 break;
             case "Mana Potion":
                 break;
             case "Venom Potion":
+                healthManager.DamageHealth(0.7f);
                 break;
             case "Great Red Gem":
                 break;
@@ -120,17 +128,38 @@ public class InventoryManager : MonoBehaviour
         {
             InventorySlot slot = InventorySlots[i];
             InventoryItem itemInSlot = slot.GetComponentInChildren<InventoryItem>();
+            InventoryItemsData itemInList = null;
+            
             if (itemInSlot != null)
             {
-                InventoryItemsData itemsData = new InventoryItemsData();
+                itemInList = playerInventoryList.items.Find(j => j.itemName == itemInSlot.itemName);
+            }
+            
+            if (itemInSlot != null && itemInList == null)
+            {
+                InventoryItemsData itemData = new InventoryItemsData();
 
-                itemsData.itemName = itemInSlot.itemName;
-                itemsData.itemQuantity = itemInSlot.quantity;
-                itemsData.slotIndex = i;
+                itemData.itemName = itemInSlot.itemName;
+                itemData.itemQuantity = itemInSlot.quantity;
+                itemData.slotIndex = i;
 
-                playerInventoryList.items.Add(itemsData);
+                playerInventoryList.items.Add(itemData);
+            }
+            else if(itemInList != null) 
+            {
+                itemInList.itemQuantity = itemInSlot.quantity;
+                itemInList.slotIndex = i;
             }
         } 
+
+        StartCoroutine(SaveFeedback());
+    }
+
+    IEnumerator SaveFeedback()
+    {
+        saveFeedback.SetActive(true);
+        yield return new WaitForSecondsRealtime(1f);
+        saveFeedback.SetActive(false);
     }
 
     public void LoadInventory(PlayerInventoryData playerInventoryList)
