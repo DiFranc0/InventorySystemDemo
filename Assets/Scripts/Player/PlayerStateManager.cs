@@ -8,7 +8,13 @@ public class PlayerStateManager : MonoBehaviour
 {
     public CharacterController PlayerController;
 
+    public GameObject InventoryWindow;
+
+    public GameObject CameraObject;
+
     public PlayerInput PlayerInput;
+
+    public Animator PlayerAnimator;
 
     public Vector3 MoveVector;
 
@@ -22,11 +28,20 @@ public class PlayerStateManager : MonoBehaviour
 
     private Vector3 gravityVector;
 
+    private float targetRotationY;
+
+    Vector3 movementInput;
+
     private void Awake()
     {
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
         PlayerController = GetComponent<CharacterController>();
         PlayerInput = GetComponent<PlayerInput>();
-        PlayerWalkSpeed = 0.05f;
+        PlayerAnimator = GetComponent<Animator>();
+
+        PlayerWalkSpeed = 10f;
         PlayerRotationSpeed = 10;
 
         gravityVector = new Vector3(0, -9.81f, 0);
@@ -35,26 +50,52 @@ public class PlayerStateManager : MonoBehaviour
 
     private void Update()
     {
+        RotateTowardsCamera();
+
         MovePlayer();
-        RotateTowardsVector();
+        
         ApplyGravityToPlayer();
+
+        SetWalkingAnimation();
+
+
+
     }
 
     private void OnMove(InputValue value)
     {
         InputVector = value.Get<Vector2>();
-        MoveVector.x = InputVector.x;
-        MoveVector.z = InputVector.y;
+
+        movementInput = new Vector3(InputVector.x, 0, InputVector.y).normalized;
+
     }
 
     private void OnLook(InputValue value)
     {
         RotateVector = value.Get<Vector2>();
+        targetRotationY += RotateVector.x;
     }
 
     public void MovePlayer()
     {
-        PlayerController.Move(PlayerWalkSpeed * MoveVector);
+
+        if (movementInput != Vector3.zero)
+        {
+            PlayerController.Move(MoveVector * PlayerWalkSpeed * Time.deltaTime);
+        }
+    }
+
+    public void SetWalkingAnimation()
+    {
+
+        if (movementInput != Vector3.zero)
+        {
+            PlayerAnimator.SetBool("pWalking", true);
+        }
+        else
+        {
+            PlayerAnimator.SetBool("pWalking", false);
+        }
     }
 
     public void ApplyGravityToPlayer()
@@ -62,18 +103,41 @@ public class PlayerStateManager : MonoBehaviour
         PlayerController.Move(gravityVector * Time.deltaTime);
     }
 
-    public void RotateTowardsVector()
+    public void RotateTowardsCamera()
     {
-        Vector3 xzDirection = new Vector3(MoveVector.x, 0, MoveVector.z);
+        Quaternion targetRotation = Quaternion.Euler(0, targetRotationY, 0);
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * PlayerRotationSpeed);
 
-        if(xzDirection.magnitude == 0)
+        if (movementInput != Vector3.zero)
         {
-            return;
+            Vector3 cameraForward = CameraObject.transform.forward;
+            Vector3 cameraRight = CameraObject.transform.right;
+
+            cameraForward.y = 0;
+            cameraRight.y = 0;
+            cameraForward.Normalize();
+            cameraRight.Normalize();
+
+            MoveVector = cameraForward * movementInput.z + cameraRight * movementInput.x;
         }
+    }
 
-        Quaternion rotation = Quaternion.LookRotation(xzDirection);
-        transform.rotation = Quaternion.Slerp(transform.rotation, rotation, Time.deltaTime * PlayerRotationSpeed);
-
-        //transform.localRotation = Quaternion.Euler(0, RotateVector.x, 0);
+    private void OnToggleInventory()
+    {
+        if (!InventoryWindow.activeSelf)
+        {
+            InventoryWindow.SetActive(true);
+            Time.timeScale = 0;
+            Cursor.lockState = CursorLockMode.Confined;
+            Cursor.visible = true;
+        }
+        else
+        {
+            InventoryWindow.SetActive(false);
+            Time.timeScale = 1;
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
+        
     }
 }
